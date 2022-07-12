@@ -11,4 +11,7 @@ def generate_launch_description():
             executable='ros_qwiic_tof',
             name='ros_qwiic_tof',
             output='screen'),
+            parameters=[
+                {'bus': '/dev/i2c-8'},
+            ]
     ])

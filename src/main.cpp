@@ -54,12 +54,14 @@ class I2CPublisher : public rclcpp::Node
     I2CPublisher()
     : Node("i2cpublisher")
     , _id(0)
+    , _bus("")
     {
     }
 
     void initialize()
     {
       get_parameter_or<uint8_t>("id", _id, 0x29); 
+      get_parameter_or<std::string>("bus", _bus, "/dev/i2c-1"); 
       get_parameter_or<std::string>("frame_id", _frameId, "depth"); 
       get_parameter_or<std::string>("topic", _topic, "points2"); 
       get_parameter_or<double>("poll", _poll, 15.0);
@@ -67,9 +69,10 @@ class I2CPublisher : public rclcpp::Node
 
       
 
-      Wire.begin();
-      Wire.setAddressSize(2); 
-      Wire.setPageBytes(256);
+      pWire = new TwoWire(_bus);
+      pWire->begin();
+      pWire->setAddressSize(2); 
+      pWire->setPageBytes(256);
       myImager.begin(_id, Wire);
       
       myImager.setResolution(kResolution * kResolution); //Enable all 64 pads
@@ -180,10 +183,13 @@ class I2CPublisher : public rclcpp::Node
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr _pointcloud;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr _marker;
     uint8_t _id;
+    std::string _bus;
     double _poll;
     std::string _topic;
     std::string _frameId;
     bool _debug;
+
+    TwoWire *pWire = NULL;
 };
 
 int main(int argc, char * argv[])
@@ -192,6 +198,7 @@ int main(int argc, char * argv[])
 
     auto node = std::make_shared<I2CPublisher>();
     node->declare_parameter("i2c_address");
+    node->declare_parameter("bus");
     node->declare_parameter("frame_id");
     node->declare_parameter("poll");
     node->declare_parameter("topic");
