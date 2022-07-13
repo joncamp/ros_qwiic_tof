@@ -65,14 +65,12 @@ class I2CPublisher : public rclcpp::Node
       get_parameter_or<std::string>("frame_id", _frameId, "depth"); 
       get_parameter_or<std::string>("topic", _topic, "points2"); 
       get_parameter_or<double>("poll", _poll, 15.0);
-      get_parameter_or<bool>("debug", _debug, false);
+      get_parameter_or<bool>("debug", _debug, false);      
 
-      
-
-      pWire = new TwoWire(_bus);
-      pWire->begin();
-      pWire->setAddressSize(2); 
-      pWire->setPageBytes(256);
+      Wire.setBus(_bus);
+      Wire.begin();
+      Wire.setAddressSize(2); 
+      Wire.setPageBytes(256);
       myImager.begin(_id, Wire);
       
       myImager.setResolution(kResolution * kResolution); //Enable all 64 pads
@@ -188,8 +186,6 @@ class I2CPublisher : public rclcpp::Node
     std::string _topic;
     std::string _frameId;
     bool _debug;
-
-    TwoWire *pWire = NULL;
 };
 
 int main(int argc, char * argv[])
